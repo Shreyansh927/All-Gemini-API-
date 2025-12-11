@@ -12,7 +12,7 @@ const App = () => {
 
     try {
       const genAI = new GoogleGenerativeAI(
-        "AIzaSyCF07lNfYLaDI7pEkVWW5fbXHtZvwOqVEk"
+        "AIzaSyDIKhIVJ5FqX_juhuuFGXoLVv18f197-JE"
       );
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
