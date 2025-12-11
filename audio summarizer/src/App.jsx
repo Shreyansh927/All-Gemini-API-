@@ -22,7 +22,7 @@ const App = () => {
 
     try {
       const ai = new GoogleGenerativeAI({
-        apiKey: "AIzaSyCF07lNfYLaDI7pEkVWW5fbXHtZvwOqVEk",
+        apiKey: "AIzaSyDIKhIVJ5FqX_juhuuFGXoLVv18f197-JE",
       });
 
       const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
