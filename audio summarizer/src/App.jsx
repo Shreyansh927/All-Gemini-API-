@@ -1,69 +1,84 @@
 import React, { useState } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const AudioSummarizer = () => {
-  const [audioFile, setAudioFile] = useState(null);
-  const [summary, setSummary] = useState("");
+const App = () => {
+  const [data, setData] = useState("");
+  const [file, setFile] = useState(null);
+  const [audioURL, setAudioURL] = useState("");
 
-  // Convert uploaded file → Base64
+  // Convert file → Base64
   const toBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = (err) => reject(err);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
       reader.readAsDataURL(file);
     });
 
   const summarizeAudio = async () => {
-    if (!audioFile) {
-      alert("Please upload an audio file");
-      return;
-    }
+    if (!file) return alert("Upload an audio file first!");
+
+    const base64 = await toBase64(file);
 
     try {
-      const base64Audio = await toBase64(audioFile);
+      const ai = new GoogleGenerativeAI({
+        apiKey: "AIzaSyCF07lNfYLaDI7pEkVWW5fbXHtZvwOqVEk",
+      });
 
-      const genAI = new GoogleGenerativeAI(
-        "AIzaSyCF07lNfYLaDI7pEkVWW5fbXHtZvwOqVEk"
-      );
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const response = await model.generateContent([
-        { text: "Please summarize the audio." },
+      const result = await model.generateContent([
+        { text: "Summarize this audio in 3 sentences." },
         {
           inlineData: {
-            mimeType: audioFile.type,
-            data: base64Audio,
+            mimeType: file.type,
+            data: base64.split(",")[1], // Remove "data:*/*;base64,"
           },
         },
       ]);
 
-      setSummary(response.response.text());
+      setData(result.response.text());
     } catch (err) {
-      console.error("Error:", err);
-      alert("Something went wrong. Check console for details.");
+      console.log("Error:", err);
     }
   };
 
+  // File selection handler
+  const handleFileUpload = (e) => {
+    const uploadedFile = e.target.files[0];
+    setFile(uploadedFile);
+    setAudioURL(URL.createObjectURL(uploadedFile)); // preview audio
+  };
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>🎧 Gemini Audio Summarizer</h2>
+    <div style={{ padding: 20 }}>
+      <h1>🎵 Audio Summarizer</h1>
 
-      <input
-        type="file"
-        accept="audio/*"
-        onChange={(e) => setAudioFile(e.target.files[0])}
-      />
+      {/* Upload Input */}
+      <input type="file" accept="audio/*" onChange={handleFileUpload} />
 
-      <br />
-      <br />
+      {/* Audio Preview */}
+      {audioURL && (
+        <div style={{ marginTop: 20 }}>
+          <h3>Preview Audio:</h3>
+          <audio controls src={audioURL}></audio>
+        </div>
+      )}
 
-      <button onClick={summarizeAudio}>Summarize Audio</button>
+      {/* Summarize Button */}
+      <button onClick={summarizeAudio} style={{ marginTop: 20 }}>
+        Summarize Audio
+      </button>
 
-      <h3>📌 Summary:</h3>
-      <p>{summary || "No summary yet."}</p>
+      {/* Output */}
+      {data && (
+        <div style={{ marginTop: 20 }}>
+          <h3>Summary:</h3>
+          <p>{data}</p>
+        </div>
+      )}
     </div>
   );
 };
 
-export default AudioSummarizer;
+export default App;
